@@ -4,7 +4,7 @@
 
 import { getCachedMetadata, setCachedMetadata } from './supabase.js';
 
-const TMDB_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmYxMWQzNmNkMzcyY2Q1MGFlNGI3NDBhYTJiZjc5YiIsIm5iZiI6MTc4OTUyNTg3Mi4zNzksInN1YiI6IjZhYTlmZjcwYTI5M2ZjMmY3N2FhNTcxYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.0PyCCHdHGMCkVqOP9-Q3hsQQzyuKQgBp5ztLCqIO9TWs';
+const TMDB_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmYxMWQzNmNkMzcyY2Q1MGFlNGI3NDBhYTJiZjc5YiIsIm5iZiI6MTc4OTUyNTg3Mi4zNzksInN1YiI6IjZhYTlmZjcwYTI5M2ZjMmY3N2FhNTcxYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.0PyCCHdHGMCkVqOP9-Q3hsQzyuKQgBp5ztLCqIO9TWs';
 const IMG_BASE = 'https://image.tmdb.org/t/p/';
 
 export const img = {
