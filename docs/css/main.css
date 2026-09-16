@@ -1,0 +1,118 @@
+/* ============================================================
+   main.css — variables, reset, layout
+   ============================================================ */
+
+:root {
+  --accent:     #E50914;
+  --accent2:    #0078D4;
+  --bg:         #0c0c10;
+  --card:       #141418;
+  --card2:      #1a1a20;
+  --border:     #232330;
+  --text:        #e8e8f0;
+  --muted:      #666680;
+  --radius:     12px;
+  --nav-h:      64px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg:     #f4f4f7;
+    --card:   #ffffff;
+    --card2:  #f0f0f5;
+    --border: #dddde8;
+    --text:    #1a1a2e;
+    --muted:  #888899;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  min-height: 100vh;
+  padding-bottom: var(--nav-h);
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* ── Navigation ─────────────────────────────────────────────── */
+#main-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color 0.15s;
+  font-family: inherit;
+}
+
+.nav-item.active { color: var(--accent); }
+.nav-item:hover  { color: var(--text); }
+
+.nav-icon  { font-size: 20px; line-height: 1; }
+.nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.5px; }
+
+/* ── Screen header ───────────────────────────────────────────── */
+.screen-header {
+  padding: 20px 16px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.screen-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+/* ── Loading / error ─────────────────────────────────────────── */
+.loading-spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 80px auto;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--muted);
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
