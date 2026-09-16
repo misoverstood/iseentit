@@ -2,8 +2,9 @@
 // tmdb.js — TMDB API wrapper
 // ============================================================
 
-import { getSetting, getCachedMetadata, setCachedMetadata } from './supabase.js';
+import { getCachedMetadata, setCachedMetadata } from './supabase.js';
 
+const TMDB_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmYxMWQzNmNkMzcyY2Q1MGFlNGI3NDBhYTJiZjc5YiIsIm5iZiI6MTc4OTUyNTg3Mi4zNzksInN1YiI6IjZhYTlmZjcwYTI5M2ZjMmY3N2FhNTcxYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.0PyCCHdHGMCkVqOP9-Q3hsQQzyuKQgBp5ztLCqIO9TWs';
 const IMG_BASE = 'https://image.tmdb.org/t/p/';
 
 export const img = {
@@ -13,9 +14,8 @@ export const img = {
 };
 
 async function tmdbFetch(endpoint) {
-  const token = await getSetting('tmdb_token');
   const res = await fetch(`https://api.themoviedb.org/3${endpoint}`, {
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+    headers: { Authorization: `Bearer ${TMDB_TOKEN}`, 'Content-Type': 'application/json' }
   });
   if (!res.ok) throw new Error(`TMDB ${res.status}: ${endpoint}`);
   return res.json();

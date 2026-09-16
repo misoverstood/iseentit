@@ -3,10 +3,9 @@
 // ============================================================
 
 const SUPABASE_URL = 'https://cazhvtvmtucegajvwhwp.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmYxMWQzNmNkMzcyY2Q1MGFlNGI3NDBhYTJiZjc5YiIsIm5iZiI6MTc4OTUyNTg3Mi4zNzksInN1YiI6IjZhYTlmZjcwYTI5M2ZjMmY3N2FhNTcxYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.0PyCCHdHGMCkVqOP9-Q3hsQzyuKQgBp5ztLCqIO9TWs';
-
-// IMPORTANT: replace the anon key above with your full key from
-// Supabase → Settings → API → Legacy → anon/public (the full eyJ... value)
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhemh2dHZtdHVjZWdhanZ3aHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1MjEwMjMsImV4cCI6MjEwNTA5NzAyM30.GEh24ocD3mumxsNmJIvLnVx8B83nziDUPo_AYHx8q-I';
+// REPLACE the value above with your full anon key from:
+// Supabase → Settings → API → Legacy anon/public → Copy button
 
 export const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -58,7 +57,6 @@ export async function getEpisodeProgress(titleId) {
 }
 
 export async function markEpisodeWatched(titleId, season, episode, runtimeMinutes, watched = true) {
-  // upsert episode_progress row
   await db.from('episode_progress').upsert({
     title_id: titleId,
     season_number: season,
@@ -68,7 +66,6 @@ export async function markEpisodeWatched(titleId, season, episode, runtimeMinute
     watched_at: watched ? new Date().toISOString() : null,
   }, { onConflict: 'title_id,season_number,episode_number' });
 
-  // log a watch session when marking watched
   if (watched && runtimeMinutes) {
     await db.from('watch_sessions').insert({
       title_id: titleId,
@@ -91,11 +88,10 @@ export async function getWatchStats() {
   const { data } = await db.from('watch_sessions').select('media_type, duration_minutes, watched_at');
   if (!data) return { totalMinutes: 0, movieMinutes: 0, tvMinutes: 0, byDay: {} };
 
-  const totalMinutes = data.reduce((s, r) => s + (r.duration_minutes ?? 0), 0);
-  const movieMinutes = data.filter(r => r.media_type === 'movie').reduce((s, r) => s + (r.duration_minutes ?? 0), 0);
-  const tvMinutes = totalMinutes - movieMinutes;
+  const totalMinutes  = data.reduce((s, r) => s + (r.duration_minutes ?? 0), 0);
+  const movieMinutes  = data.filter(r => r.media_type === 'movie').reduce((s, r) => s + (r.duration_minutes ?? 0), 0);
+  const tvMinutes     = totalMinutes - movieMinutes;
 
-  // group by date for bar chart (last 7 days)
   const byDay = {};
   const now = new Date();
   for (let i = 6; i >= 0; i--) {
@@ -115,7 +111,7 @@ export async function getCachedMetadata(tmdbId, mediaType) {
   const { data } = await db.from('metadata_cache').select('data, expires_at')
     .eq('tmdb_id', tmdbId).eq('media_type', mediaType).single();
   if (!data) return null;
-  if (new Date(data.expires_at) < new Date()) return null; // expired
+  if (new Date(data.expires_at) < new Date()) return null;
   return data.data;
 }
 
