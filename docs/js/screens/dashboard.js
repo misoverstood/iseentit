@@ -42,7 +42,10 @@ export async function renderDashboard() {
 
   app.innerHTML = `
     <div class="screen-header">
-      <span class="screen-title">iseentit</span>
+      <span class="screen-title" style="display:flex;align-items:center;gap:10px;">
+        <img src="icons/android-chrome-192x192.png" alt="" style="width:36px;height:36px;border-radius:8px;" />
+        iseentit
+      </span>
     </div>
 
     <!-- Stat row -->
