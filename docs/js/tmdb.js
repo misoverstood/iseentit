@@ -2,20 +2,28 @@
 // tmdb.js — TMDB API wrapper
 // ============================================================
 
-import { getCachedMetadata, setCachedMetadata } from './supabase.js';
+import { getSetting, getCachedMetadata, setCachedMetadata } from './supabase.js';
 
-const TMDB_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmYxMWQzNmNkMzcyY2Q1MGFlNGI3NDBhYTJiZjc5YiIsIm5iZiI6MTc4OTUyNTg3Mi4zNzksInN1YiI6IjZhYTlmZjcwYTI5M2ZjMmY3N2FhNTcxYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.0PyCCHdHGMCkVqOP9-Q3hsQzyuKQgBp5ztLCqIO9TWs';
 const IMG_BASE = 'https://image.tmdb.org/t/p/';
 
+let cachedToken = null;
+
+async function getToken() {
+  if (cachedToken) return cachedToken;
+  cachedToken = await getSetting('tmdb_token');
+  return cachedToken;
+}
+
 export const img = {
-  poster:   (path) => path ? `${IMG_BASE}w300${path}` : '/docs/assets/no-poster.svg',
+  poster:   (path) => path ? `${IMG_BASE}w300${path}` : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450"%3E%3Crect fill="%23222" width="300" height="450"/%3E%3C/svg%3E',
   backdrop: (path) => path ? `${IMG_BASE}w1280${path}` : null,
-  cast:     (path) => path ? `${IMG_BASE}w185${path}` : '/docs/assets/no-avatar.svg',
+  cast:     (path) => path ? `${IMG_BASE}w185${path}` : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 185 185"%3E%3Crect fill="%23222" width="185" height="185"/%3E%3C/svg%3E',
 };
 
 async function tmdbFetch(endpoint) {
+  const token = await getToken();
   const res = await fetch(`https://api.themoviedb.org/3${endpoint}`, {
-    headers: { Authorization: `Bearer ${TMDB_TOKEN}`, 'Content-Type': 'application/json' }
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
   });
   if (!res.ok) throw new Error(`TMDB ${res.status}: ${endpoint}`);
   return res.json();
@@ -69,5 +77,10 @@ export async function getTVSeason(showId, seasonNumber) {
 // ── Upcoming ──────────────────────────────────────────────────
 export async function getUpcomingMovies() {
   const data = await tmdbFetch('/movie/upcoming?language=en-US&region=CA');
+  return data.results ?? [];
+}
+
+export async function getTVAiringToday() {
+  const data = await tmdbFetch('/tv/airing_today?language=en-US');
   return data.results ?? [];
 }
