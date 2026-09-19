@@ -5,6 +5,7 @@
 import { getMovie, getTVShow, getTVSeason, img } from '../tmdb.js';
 import { getTitle, addTitle, updateTitle, getEpisodeProgress, markEpisodeWatched, logMovieWatched } from '../supabase.js';
 import { navigate } from '../utils/router.js';
+import { STATUSES, statusLabel } from '../utils/status.js';
 
 export async function renderDetail(mediaType, tmdbId) {
   const app = document.getElementById('app');
@@ -120,12 +121,9 @@ function renderLibrarySection(entry, mediaType) {
   }
   return `
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-      <span class="badge badge-${entry.status}" style="font-size:12px;padding:4px 12px;">${entry.status.replace(/_/g,' ')}</span>
+      <span class="badge badge-${entry.status}" style="font-size:12px;padding:4px 12px;">${statusLabel(entry.status)}</span>
       <select id="status-select" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;font-family:inherit;font-size:12px;">
-        <option value="watching"      ${entry.status==='watching'?'selected':''}>Watching</option>
-        <option value="completed"     ${entry.status==='completed'?'selected':''}>Completed</option>
-        <option value="plan_to_watch" ${entry.status==='plan_to_watch'?'selected':''}>Plan to Watch</option>
-        <option value="dropped"       ${entry.status==='dropped'?'selected':''}>Dropped</option>
+        ${STATUSES.map(s => `<option value="${s.key}" ${entry.status===s.key?'selected':''}>${s.label}</option>`).join('')}
       </select>
       ${mediaType==='movie' ? `<button class="btn btn-secondary" id="btn-log-watched" style="font-size:12px;">Log watched</button>` : ''}
       <button class="btn btn-secondary" id="btn-remove" style="font-size:12px;color:#e05;">Remove</button>
@@ -165,7 +163,7 @@ function bindLibraryActions(app, id, mediaType, data, entry) {
     await updateTitle(entry.id, { status: e.target.value });
     entry.status = e.target.value;
     const badge = app.querySelector('.badge');
-    if (badge) { badge.className = `badge badge-${e.target.value}`; badge.textContent = e.target.value.replace(/_/g,' '); }
+    if (badge) { badge.className = `badge badge-${e.target.value}`; badge.textContent = statusLabel(e.target.value); }
   });
 
   app.querySelector('#btn-log-watched')?.addEventListener('click', async () => {

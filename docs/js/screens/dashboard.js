@@ -5,6 +5,7 @@
 import { getTitles, getWatchStats } from '../supabase.js';
 import { img } from '../tmdb.js';
 import { navigate } from '../utils/router.js';
+import { statusLabel } from '../utils/status.js';
 
 export async function renderDashboard() {
   const app = document.getElementById('app');
@@ -93,7 +94,7 @@ export async function renderDashboard() {
           <img src="${img.poster(t.poster_path)}" alt="${t.title}" loading="lazy" />
           <div class="poster-info">
             <div class="poster-title">${t.title}</div>
-            <div class="poster-year"><span class="badge badge-${t.status}">${t.status.replace(/_/g,' ')}</span></div>
+            <div class="poster-year"><span class="badge badge-${t.status}">${statusLabel(t.status)}</span></div>
           </div>
         </div>
       `).join('')}
