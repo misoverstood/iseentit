@@ -2,8 +2,8 @@
 // dashboard.js — Dashboard screen
 // ============================================================
 
-import { getTitles, getWatchStats } from '../supabase.js';
-import { img } from '../tmdb.js';
+import { getTitles, getWatchStats, getEpisodeProgress } from '../supabase.js';
+import { getTVShow, img } from '../tmdb.js';
 import { navigate } from '../utils/router.js';
 import { statusLabel } from '../utils/status.js';
 
@@ -22,8 +22,22 @@ export async function renderDashboard() {
   const movieHrs   = Math.round(stats.movieMinutes / 60 * 10) / 10;
   const tvHrs      = Math.round(stats.tvMinutes / 60 * 10) / 10;
 
+  // Real progress for each show currently being watched
+  const progress = {};
+  await Promise.all(watching.filter(t => t.media_type === 'tv').map(async t => {
+    try {
+      const [show, eps] = await Promise.all([getTVShow(t.tmdb_id), getEpisodeProgress(t.id)]);
+      const total   = show.number_of_episodes || 0;
+      const watched = eps.filter(e => e.watched).length;
+      progress[t.id] = { watched, total, pct: total ? Math.min(100, Math.round(watched / total * 100)) : 0 };
+    } catch (err) {
+      console.error('progress:', t.title, err);
+    }
+  }));
+
   // Build weekly bar chart data
   const days = Object.entries(stats.byDay);
+  const weekMins = days.reduce((s, [, m]) => s + m, 0);
   const maxMins = Math.max(...days.map(([, m]) => m), 1);
 
   app.innerHTML = `
@@ -68,21 +82,29 @@ export async function renderDashboard() {
           </div>
         `).join('')}
       </div>
+      <div style="font-size:10px; color:var(--muted); text-align:center; margin-top:8px;">
+        ${weekMins > 0 ? `${Math.round(weekMins / 60 * 10) / 10}h this week` : 'Nothing logged this week'}
+      </div>
     </div>
 
     <!-- Currently watching -->
     ${watching.length ? `
       <div class="section-label">CURRENTLY WATCHING</div>
       <div style="display:flex; gap:10px; padding:0 16px 16px; overflow-x:auto; scrollbar-width:none;">
-        ${watching.map(t => `
+        ${watching.map(t => {
+          const p = progress[t.id];
+          return `
           <div class="poster-card" style="min-width:100px; max-width:100px;" data-id="${t.tmdb_id}" data-type="${t.media_type}">
             <img src="${img.poster(t.poster_path)}" alt="${t.title}" loading="lazy" />
             <div class="poster-info">
               <div class="poster-title">${t.title}</div>
-              <div class="progress-bar"><div class="progress-bar-fill" style="width:50%"></div></div>
+              ${p ? `
+                <div class="progress-bar"><div class="progress-bar-fill" style="width:${p.pct}%"></div></div>
+                <div class="poster-year" style="margin-top:3px;">${p.watched} / ${p.total} eps · ${p.pct}%</div>
+              ` : `<div class="poster-year">${t.year ?? ''}</div>`}
             </div>
-          </div>
-        `).join('')}
+          </div>`;
+        }).join('')}
       </div>
     ` : ''}
 
