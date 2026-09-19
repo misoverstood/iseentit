@@ -17,7 +17,7 @@ for (const [k, v] of Object.entries({ SUPABASE_URL, SUPABASE_SERVICE_KEY, TMDB_T
   if (!v) { console.error(`Missing env ${k}`); process.exit(1); }
 }
 
-const APP_URL = 'https://misoverstood.github.io/iseentit/';
+const APP_URL = 'https://iseentit.flemingdon.org/';
 const TZ = 'America/Toronto';
 const today = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); // YYYY-MM-DD
 const force = String(FORCE).toLowerCase() === 'true';
