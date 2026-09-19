@@ -1,0 +1,33 @@
+name: Release day alerts
+
+on:
+  schedule:
+    # 13:00 UTC = 9:00 Toronto during daylight time, 8:00 during standard time
+    - cron: '0 13 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Send a summary even if nothing releases today (for testing)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check releases and notify
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TMDB_TOKEN: ${{ secrets.TMDB_TOKEN }}
+          PUSHOVER_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
+          PUSHOVER_USER: ${{ secrets.PUSHOVER_USER }}
+          FORCE: ${{ inputs.force }}
+        run: node .github/scripts/release-alerts.mjs
