@@ -19,7 +19,7 @@
 /* ── Responsive width: fill more of the screen as it grows ───── */
 @media (min-width: 900px)  { :root { --app-w: 900px;  } }
 @media (min-width: 1200px) { :root { --app-w: 1140px; } }
-@media (min-width: 1600px) { :root { --app-w: 1320px; } }
+@media (min-width: 1600px) { :root { --app-w: 1500px; } }
 
 @media (prefers-color-scheme: light) {
   :root {
@@ -64,6 +64,7 @@ html, body {
   z-index: 100;
   max-width: var(--app-w);
   margin: 0 auto;
+  padding: 0 calc((100% - min(100%, 720px)) / 2); /* keep the 5 items in a centered ~720px group */
 }
 
 .nav-item {
