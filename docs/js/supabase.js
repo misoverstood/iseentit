@@ -7,7 +7,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // REPLACE the value above with your full anon key from:
 // Supabase → Settings → API → Legacy anon/public → Copy button
 
-const { createClient } = window.supabase;
+const { createClient } = window.supabase ?? supabase;
 export const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── Settings ─────────────────────────────────────────────────
@@ -127,3 +127,4 @@ export async function setCachedMetadata(tmdbId, mediaType, payload) {
     expires_at: expires.toISOString(),
   }, { onConflict: 'tmdb_id,media_type' });
 }
+
