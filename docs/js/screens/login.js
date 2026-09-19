@@ -1,8 +1,8 @@
 // ============================================================
-// login.js — magic link login screen
+// login.js — OTP code login screen
 // ============================================================
 
-import { sendOTP } from '../supabase.js';
+import { sendOTP, verifyOTP } from '../supabase.js';
 
 export async function renderLogin(message = '') {
   const app = document.getElementById('app');
@@ -20,28 +20,29 @@ export async function renderLogin(message = '') {
         <div id="step-email">
           ${message ? `<div style="color:#e05;font-size:13px;margin-bottom:12px;text-align:center;">${message}</div>` : ''}
           <div style="font-size:13px;color:var(--muted);margin-bottom:12px;text-align:center;">
-            Enter your email to receive a sign-in link
+            Enter your email to receive a sign-in code
           </div>
           <input id="email-input" type="email" placeholder="your@email.com"
             style="width:100%;padding:14px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:15px;outline:none;margin-bottom:12px;" />
           <button id="btn-send-otp" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;">
-            Send sign-in link
+            Send code
           </button>
           <div id="email-error" style="color:#e05;font-size:12px;margin-top:8px;text-align:center;"></div>
         </div>
 
-        <div id="step-sent" style="display:none;text-align:center;">
-          <div style="font-size:40px;margin-bottom:12px;">📬</div>
-          <div style="font-weight:700;font-size:15px;margin-bottom:6px;">Check your email</div>
-          <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px;">
-            We sent a sign-in link to<br /><strong id="sent-email" style="color:var(--text);"></strong>
+        <div id="step-otp" style="display:none;">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:12px;text-align:center;">
+            Enter the 6-digit code sent to<br /><strong id="sent-email" style="color:var(--text);"></strong>
           </div>
-          <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:20px;">
-            Click the link in the email to sign in. The link expires in 10 minutes and can only be used once.
-          </div>
-          <button id="btn-back" class="btn btn-secondary" style="width:100%;justify-content:center;padding:12px;">
-            Use a different email
+          <input id="otp-input" type="text" inputmode="numeric" placeholder="000000" maxlength="6"
+            style="width:100%;padding:14px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:monospace;font-size:28px;outline:none;margin-bottom:12px;text-align:center;letter-spacing:10px;" />
+          <button id="btn-verify-otp" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;">
+            Sign in
           </button>
+          <button id="btn-back" class="btn btn-secondary" style="width:100%;justify-content:center;padding:12px;margin-top:8px;">
+            Back
+          </button>
+          <div id="otp-error" style="color:#e05;font-size:12px;margin-top:8px;text-align:center;"></div>
         </div>
 
       </div>
@@ -49,9 +50,13 @@ export async function renderLogin(message = '') {
   `;
 
   const emailInput = document.getElementById('email-input');
+  const otpInput   = document.getElementById('otp-input');
   const stepEmail  = document.getElementById('step-email');
-  const stepSent   = document.getElementById('step-sent');
+  const stepOtp    = document.getElementById('step-otp');
   const emailError = document.getElementById('email-error');
+  const otpError   = document.getElementById('otp-error');
+
+  let currentEmail = '';
 
   document.getElementById('btn-send-otp').addEventListener('click', async () => {
     const btn = document.getElementById('btn-send-otp');
@@ -62,25 +67,49 @@ export async function renderLogin(message = '') {
     btn.disabled = true;
     try {
       await sendOTP(email);
+      currentEmail = email;
       document.getElementById('sent-email').textContent = email;
       stepEmail.style.display = 'none';
-      stepSent.style.display = 'block';
+      stepOtp.style.display = 'block';
+      otpInput.focus();
     } catch (e) {
-      emailError.textContent = e.message || 'Failed to send link.';
-      btn.textContent = 'Send sign-in link';
+      emailError.textContent = e.message || 'Failed to send code.';
+      btn.textContent = 'Send code';
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('btn-verify-otp').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-verify-otp');
+    otpError.textContent = '';
+    const token = otpInput.value.trim();
+    if (token.length !== 6) { otpError.textContent = 'Enter the 6-digit code.'; return; }
+    btn.textContent = 'Verifying...';
+    btn.disabled = true;
+    try {
+      await verifyOTP(currentEmail, token);
+      window.location.hash = '/';
+      window.location.reload();
+    } catch (e) {
+      otpError.textContent = 'Invalid or expired code. Try again.';
+      btn.textContent = 'Sign in';
       btn.disabled = false;
     }
   });
 
   document.getElementById('btn-back').addEventListener('click', () => {
-    stepSent.style.display = 'none';
+    stepOtp.style.display = 'none';
     stepEmail.style.display = 'block';
-    emailInput.value = '';
-    emailError.textContent = '';
+    otpInput.value = '';
+    otpError.textContent = '';
   });
 
   emailInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('btn-send-otp').click();
+  });
+
+  otpInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('btn-verify-otp').click();
   });
 
   emailInput.focus();
