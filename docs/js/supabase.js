@@ -3,7 +3,7 @@
 // ============================================================
 
 const SUPABASE_URL = 'https://cazhvtvmtucegajvwhwp.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhemh2dHZtdHVjZWdhanZ3aHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1MjEwMjMsImV4cCI6MjEwNTA5NzAyM30.GEh24ocD3mumxsNmJIvLnVx8B83nziDUPo_AYHx8q-I';
+const SUPABASE_ANON_KEY = 'sb_publishable_8Dp4Bd51yLI69q6hJM2nDA__bbS8dBz';
 // REPLACE the value above with your full anon key from:
 // Supabase → Settings → API → Legacy anon/public → Copy button
 
@@ -127,4 +127,5 @@ export async function setCachedMetadata(tmdbId, mediaType, payload) {
     expires_at: expires.toISOString(),
   }, { onConflict: 'tmdb_id,media_type' });
 }
+
 
