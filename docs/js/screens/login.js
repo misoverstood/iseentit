@@ -1,0 +1,111 @@
+// ============================================================
+// login.js — OTP login screen
+// ============================================================
+
+import { sendOTP, verifyOTP } from '../supabase.js';
+
+export async function renderLogin() {
+  const app = document.getElementById('app');
+
+  app.innerHTML = `
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;">
+      <div style="width:100%;max-width:360px;">
+
+        <div style="text-align:center;margin-bottom:40px;">
+          <div style="font-size:48px;margin-bottom:12px;">🎬</div>
+          <div style="font-size:28px;font-weight:900;letter-spacing:-1px;">iseentit</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:4px;">Your personal TV & movie tracker</div>
+        </div>
+
+        <div id="step-email">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:12px;text-align:center;">
+            Enter your email to receive a one-time code
+          </div>
+          <input id="email-input" type="email" placeholder="your@email.com"
+            style="width:100%;padding:14px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:15px;outline:none;margin-bottom:12px;" />
+          <button id="btn-send-otp" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;">
+            Send code
+          </button>
+          <div id="email-error" style="color:#e05;font-size:12px;margin-top:8px;text-align:center;"></div>
+        </div>
+
+        <div id="step-otp" style="display:none;">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:12px;text-align:center;">
+            Check your email for a 6-digit code
+          </div>
+          <input id="otp-input" type="text" inputmode="numeric" placeholder="000000" maxlength="6"
+            style="width:100%;padding:14px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:24px;outline:none;margin-bottom:12px;text-align:center;letter-spacing:8px;" />
+          <button id="btn-verify-otp" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;">
+            Verify code
+          </button>
+          <button id="btn-back" class="btn btn-secondary" style="width:100%;justify-content:center;padding:12px;margin-top:8px;">
+            Back
+          </button>
+          <div id="otp-error" style="color:#e05;font-size:12px;margin-top:8px;text-align:center;"></div>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  const emailInput = document.getElementById('email-input');
+  const otpInput   = document.getElementById('otp-input');
+  const stepEmail  = document.getElementById('step-email');
+  const stepOtp    = document.getElementById('step-otp');
+  const emailError = document.getElementById('email-error');
+  const otpError   = document.getElementById('otp-error');
+
+  let currentEmail = '';
+
+  document.getElementById('btn-send-otp').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-send-otp');
+    emailError.textContent = '';
+    const email = emailInput.value.trim();
+    if (!email) { emailError.textContent = 'Enter your email.'; return; }
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+    try {
+      await sendOTP(email);
+      currentEmail = email;
+      stepEmail.style.display = 'none';
+      stepOtp.style.display = 'block';
+      otpInput.focus();
+    } catch (e) {
+      emailError.textContent = e.message || 'Failed to send code.';
+      btn.textContent = 'Send code';
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('btn-verify-otp').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-verify-otp');
+    otpError.textContent = '';
+    const token = otpInput.value.trim();
+    if (token.length !== 6) { otpError.textContent = 'Enter the 6-digit code.'; return; }
+    btn.textContent = 'Verifying...';
+    btn.disabled = true;
+    try {
+      await verifyOTP(currentEmail, token);
+      window.location.reload();
+    } catch (e) {
+      otpError.textContent = 'Invalid or expired code. Try again.';
+      btn.textContent = 'Verify code';
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('btn-back').addEventListener('click', () => {
+    stepOtp.style.display = 'none';
+    stepEmail.style.display = 'block';
+    otpInput.value = '';
+    otpError.textContent = '';
+  });
+
+  emailInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('btn-send-otp').click();
+  });
+
+  otpInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('btn-verify-otp').click();
+  });
+}
