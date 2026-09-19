@@ -1,14 +1,38 @@
 // ============================================================
-// supabase.js — database client + all DB operations
+// supabase.js — database client + auth + all DB operations
 // ============================================================
 
 const SUPABASE_URL = 'https://cazhvtvmtucegajvwhwp.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_8Dp4Bd51yLI69q6hJM2nDA__bbS8dBz';
-// REPLACE the value above with your full anon key from:
-// Supabase → Settings → API → Legacy anon/public → Copy button
 
 const { createClient } = window.supabase ?? supabase;
 export const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── Auth ──────────────────────────────────────────────────────
+export async function getSession() {
+  const { data } = await db.auth.getSession();
+  return data.session;
+}
+
+export async function sendOTP(email) {
+  const { error } = await db.auth.signInWithOtp({
+    email,
+    options: { shouldCreateUser: false }
+  });
+  if (error) throw error;
+}
+
+export async function verifyOTP(email, token) {
+  const { data, error } = await db.auth.verifyOtp({
+    email, token, type: 'email'
+  });
+  if (error) throw error;
+  return data.session;
+}
+
+export async function signOut() {
+  await db.auth.signOut();
+}
 
 // ── Settings ─────────────────────────────────────────────────
 export async function getSetting(key) {
@@ -76,7 +100,7 @@ export async function markEpisodeWatched(titleId, season, episode, runtimeMinute
   }
 }
 
-// ── Watch sessions (dashboard stats) ─────────────────────────
+// ── Watch sessions ────────────────────────────────────────────
 export async function logMovieWatched(titleId, runtimeMinutes) {
   await db.from('watch_sessions').insert({
     title_id: titleId,
@@ -89,9 +113,9 @@ export async function getWatchStats() {
   const { data } = await db.from('watch_sessions').select('media_type, duration_minutes, watched_at');
   if (!data) return { totalMinutes: 0, movieMinutes: 0, tvMinutes: 0, byDay: {} };
 
-  const totalMinutes  = data.reduce((s, r) => s + (r.duration_minutes ?? 0), 0);
-  const movieMinutes  = data.filter(r => r.media_type === 'movie').reduce((s, r) => s + (r.duration_minutes ?? 0), 0);
-  const tvMinutes     = totalMinutes - movieMinutes;
+  const totalMinutes = data.reduce((s, r) => s + (r.duration_minutes ?? 0), 0);
+  const movieMinutes = data.filter(r => r.media_type === 'movie').reduce((s, r) => s + (r.duration_minutes ?? 0), 0);
+  const tvMinutes = totalMinutes - movieMinutes;
 
   const byDay = {};
   const now = new Date();
@@ -127,5 +151,3 @@ export async function setCachedMetadata(tmdbId, mediaType, payload) {
     expires_at: expires.toISOString(),
   }, { onConflict: 'tmdb_id,media_type' });
 }
-
-
