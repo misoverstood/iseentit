@@ -15,10 +15,34 @@ import { renderCalendar }   from './screens/calendar.js';
 import { renderSettings }   from './screens/settings.js';
 
 async function boot() {
+  // Handle magic link redirect — Supabase puts tokens in the URL hash
+  const hash = window.location.hash;
+  if (hash.includes('access_token') || hash.includes('error=')) {
+    const params = new URLSearchParams(hash.slice(1));
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    const error = params.get('error_description');
+
+    if (error) {
+      // Link expired — clear hash and show login with message
+      window.location.hash = '';
+      renderLogin('Link expired. Please request a new one.');
+      return;
+    }
+
+    if (accessToken && refreshToken) {
+      // Set the session from the magic link tokens
+      const { db } = await import('./supabase.js');
+      await db.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+      window.location.hash = '/';
+      window.location.reload();
+      return;
+    }
+  }
+
   const session = await getSession();
 
   if (!session) {
-    // Not logged in — show login screen, no nav
     renderLogin();
     return;
   }
