@@ -5,13 +5,7 @@
 import { getTitles, updateTitle, deleteTitle } from '../supabase.js';
 import { img } from '../tmdb.js';
 import { navigate } from '../utils/router.js';
-
-const STATUSES = [
-  { key: 'watching',       label: 'Watching'      },
-  { key: 'completed',      label: 'Completed'     },
-  { key: 'plan_to_watch',  label: 'Plan to Watch' },
-  { key: 'dropped',        label: 'Dropped'       },
-];
+import { STATUSES } from '../utils/status.js';
 
 export async function renderLibrary() {
   const app = document.getElementById('app');
