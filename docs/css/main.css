@@ -13,7 +13,13 @@
   --muted:      #666680;
   --radius:     12px;
   --nav-h:      64px;
+  --app-w:      680px;   /* phone / narrow default */
 }
+
+/* ── Responsive width: fill more of the screen as it grows ───── */
+@media (min-width: 900px)  { :root { --app-w: 900px;  } }
+@media (min-width: 1200px) { :root { --app-w: 1140px; } }
+@media (min-width: 1600px) { :root { --app-w: 1320px; } }
 
 @media (prefers-color-scheme: light) {
   :root {
@@ -41,7 +47,7 @@ html, body {
 #app {
   min-height: 100vh;
   padding-bottom: var(--nav-h);
-  max-width: 680px;
+  max-width: var(--app-w);
   margin: 0 auto;
 }
 
@@ -56,7 +62,7 @@ html, body {
   justify-content: space-around;
   align-items: center;
   z-index: 100;
-  max-width: 680px;
+  max-width: var(--app-w);
   margin: 0 auto;
 }
 
