@@ -3,6 +3,7 @@
 // ============================================================
 
 import { db, getSetting, signOut } from '../supabase.js';
+import { siteFooter } from '../components/footer.js';
 
 export async function renderSettings() {
   const app = document.getElementById('app');
@@ -60,6 +61,8 @@ export async function renderSettings() {
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Permanently deletes your entire library. Cannot be undone.</div>
       <button class="btn" id="btn-clear" style="background:#e0555520;color:#e05;border:1px solid #e0555540;">Clear everything</button>
     </div>
+
+    ${siteFooter()}
   `;
 
   // Load user email

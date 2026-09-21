@@ -3,6 +3,7 @@
 // ============================================================
 
 import { sendOTP, verifyOTP } from '../supabase.js';
+import { siteFooter } from '../components/footer.js';
 
 export async function renderLogin(message = '') {
   const app = document.getElementById('app');
@@ -12,7 +13,8 @@ export async function renderLogin(message = '') {
       <div style="width:100%;max-width:360px;">
 
         <div style="text-align:center;margin-bottom:40px;">
-          <div style="font-size:48px;margin-bottom:12px;">🎬</div>
+          <img src="icons/android-chrome-192x192.png" alt=""
+               style="width:80px;height:80px;margin-bottom:8px;" />
           <div style="font-size:28px;font-weight:900;letter-spacing:-1px;">iseentit</div>
           <div style="font-size:13px;color:var(--muted);margin-top:4px;">Your personal TV &amp; movie tracker</div>
         </div>
@@ -44,6 +46,8 @@ export async function renderLogin(message = '') {
           </button>
           <div id="otp-error" style="color:#e05;font-size:12px;margin-top:8px;text-align:center;"></div>
         </div>
+
+        ${siteFooter()}
 
       </div>
     </div>

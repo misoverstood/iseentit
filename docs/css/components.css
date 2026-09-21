@@ -213,3 +213,22 @@
   color: #fff;
   border-color: var(--accent);
 }
+
+/* ── Site footer (shared across my sites) ───────────────────── */
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 16px 28px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.site-footer a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.site-footer a:hover { color: var(--text); }
+.site-footer-current { color: var(--text); font-weight: 600; }
+.site-footer-sep { color: var(--muted); opacity: .45; }
