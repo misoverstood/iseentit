@@ -12,7 +12,7 @@ export async function renderLogin(message = '') {
     <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;">
       <div style="width:100%;max-width:360px;">
 
-        <div style="text-align:center;margin-bottom:40px;">
+        <div style="text-align:center;margin-bottom:22px;">
           <img src="icons/android-chrome-192x192.png" alt=""
                style="width:80px;height:80px;margin-bottom:8px;" />
           <div style="font-size:28px;font-weight:900;letter-spacing:-1px;">iseentit</div>
@@ -21,7 +21,7 @@ export async function renderLogin(message = '') {
 
         <div id="step-email">
           ${message ? `<div style="color:#e05;font-size:13px;margin-bottom:12px;text-align:center;">${message}</div>` : ''}
-          <div style="font-size:13px;color:var(--muted);margin-bottom:12px;text-align:center;">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:10px;text-align:center;">
             Enter your email to receive a sign-in code
           </div>
           <input id="email-input" type="email" placeholder="your@email.com"

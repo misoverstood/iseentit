@@ -3,11 +3,11 @@
 // ============================================================
 
 const SITES = [
+  { host: 'iseentit.com',      url: 'https://iseentit.com'      },
   { host: 'thatstheworst.com', url: 'https://thatstheworst.com' },
   { host: 'flemingdon.org',    url: 'https://flemingdon.org'    },
   { host: 'muhummud.org',      url: 'https://muhummud.org'      },
   { host: 'naseema.net',       url: 'https://naseema.net'       },
-  { host: 'iseentit.com',      url: 'https://iseentit.com'      },
 ];
 
 const CURRENT = 'iseentit.com';
