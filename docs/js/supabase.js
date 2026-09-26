@@ -100,6 +100,38 @@ export async function markEpisodeWatched(titleId, season, episode, runtimeMinute
   }
 }
 
+// Bulk version of markEpisodeWatched: one upsert + one insert for the whole
+// batch instead of a round trip per episode. Only pass episodes that are not
+// already watched, otherwise their watch sessions get counted twice.
+export async function markEpisodesWatched(titleId, episodes) {
+  if (!episodes?.length) return;
+  const now = new Date().toISOString();
+
+  const { error: progressError } = await db.from('episode_progress').upsert(
+    episodes.map(ep => ({
+      title_id: titleId,
+      season_number: ep.season_number,
+      episode_number: ep.episode_number,
+      episode_name: ep.episode_name ?? null,
+      runtime_minutes: ep.runtime_minutes,
+      watched: true,
+      watched_at: now,
+    })),
+    { onConflict: 'title_id,season_number,episode_number' }
+  );
+  if (progressError) { console.error('markEpisodesWatched progress:', progressError); return; }
+
+  const { error: sessionError } = await db.from('watch_sessions').insert(
+    episodes.filter(ep => ep.runtime_minutes).map(ep => ({
+      title_id: titleId,
+      media_type: 'episode',
+      duration_minutes: ep.runtime_minutes,
+      watched_at: now,
+    }))
+  );
+  if (sessionError) console.error('markEpisodesWatched sessions:', sessionError);
+}
+
 // ── Watch sessions ────────────────────────────────────────────
 export async function logMovieWatched(titleId, runtimeMinutes) {
   await db.from('watch_sessions').insert({

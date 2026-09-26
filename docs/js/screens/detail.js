@@ -3,7 +3,7 @@
 // ============================================================
 
 import { getMovie, getTVShow, getTVSeason, img } from '../tmdb.js';
-import { getTitle, addTitle, updateTitle, getEpisodeProgress, markEpisodeWatched, logMovieWatched } from '../supabase.js';
+import { getTitle, addTitle, updateTitle, getEpisodeProgress, markEpisodeWatched, markEpisodesWatched, logMovieWatched } from '../supabase.js';
 import { navigate } from '../utils/router.js';
 import { STATUSES, statusLabel } from '../utils/status.js';
 
@@ -160,10 +160,21 @@ function bindLibraryActions(app, id, mediaType, data, entry) {
   });
 
   app.querySelector('#status-select')?.addEventListener('change', async (e) => {
-    await updateTitle(entry.id, { status: e.target.value });
-    entry.status = e.target.value;
+    const status = e.target.value;
+    const updates = { status };
+    if (status === 'completed' && !entry.date_completed) updates.date_completed = new Date().toISOString();
+
+    await updateTitle(entry.id, updates);
+    entry.status = status;
+    Object.assign(entry, updates);
+
     const badge = app.querySelector('.badge');
-    if (badge) { badge.className = `badge badge-${e.target.value}`; badge.textContent = statusLabel(e.target.value); }
+    if (badge) { badge.className = `badge badge-${status}`; badge.textContent = statusLabel(status); }
+
+    // Marking a show Completed ticks off every episode that has aired.
+    if (status === 'completed' && mediaType === 'tv') {
+      await completeAllEpisodes(app, data, entry, e.target);
+    }
   });
 
   app.querySelector('#btn-log-watched')?.addEventListener('click', async () => {
@@ -240,4 +251,63 @@ async function loadSeasons(app, show, entry) {
       }
     });
   });
+}
+
+
+// Mark every aired episode of a show as watched. Episodes already ticked are
+// left alone, so hours are never double counted. Future/unaired episodes and
+// specials (season 0) are skipped.
+async function completeAllEpisodes(app, show, entry, selectEl) {
+  const seasons = (show.seasons || []).filter(s => s.season_number > 0);
+  if (!seasons.length) return;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const existing = await getEpisodeProgress(entry.id);
+  const watchedSet = new Set(existing.filter(e => e.watched).map(e => `${e.season_number}-${e.episode_number}`));
+
+  if (selectEl) selectEl.disabled = true;
+  const pending = [];
+
+  try {
+    for (const season of seasons) {
+      const episodes = await getTVSeason(show.id, season.season_number);
+      for (const ep of episodes) {
+        if (ep.air_date && ep.air_date > today) continue;   // not out yet
+        if (!ep.air_date) continue;                          // no date = treat as unaired
+        if (watchedSet.has(`${ep.season_number}-${ep.episode_number}`)) continue;
+        pending.push({
+          season_number: ep.season_number,
+          episode_number: ep.episode_number,
+          episode_name: ep.name ?? null,
+          runtime_minutes: ep.runtime || show.episode_run_time?.[0] || 40,
+        });
+      }
+    }
+
+    if (!pending.length) {
+      if (selectEl) selectEl.disabled = false;
+      return;
+    }
+
+    const hrs = Math.round(pending.reduce((t, e) => t + e.runtime_minutes, 0) / 60 * 10) / 10;
+    const ok = confirm(`Mark the remaining ${pending.length} aired episode${pending.length > 1 ? 's' : ''} as watched? This adds ${hrs}h to your watch time.`);
+    if (!ok) {
+      if (selectEl) selectEl.disabled = false;
+      return;
+    }
+
+    await markEpisodesWatched(entry.id, pending);
+  } catch (err) {
+    console.error('completeAllEpisodes:', err);
+    alert('Could not tick every episode. Check the console for details.');
+  } finally {
+    if (selectEl) selectEl.disabled = false;
+  }
+
+  // Redraw the season list so the checkboxes reflect the change
+  const seasonsDiv = document.getElementById('seasons-section');
+  if (seasonsDiv) {
+    seasonsDiv.innerHTML = '<div class="loading-spinner" style="width:20px;height:20px;margin:12px auto;"></div>';
+    await loadSeasons(app, show, entry);
+  }
 }
