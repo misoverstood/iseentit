@@ -1,0 +1,14 @@
+# Design context for agents — local only.
+# These describe the product and visual system for design tools like Impeccable.
+# The repo is public and docs/ is served at iseentit.com, so keep them untracked.
+PRODUCT.md
+DESIGN.md
+
+# Architecture diagram — kept in the personal docs area, not published
+ARCHITECTURE.html
+
+# Windows / editor noise
+Thumbs.db
+desktop.ini
+.vscode/
+.DS_Store
